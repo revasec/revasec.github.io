@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>0xReva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #080808;
+            --bg-secondary: #111111;
+            --text-primary: #e8e8e8;
+            --text-secondary: #666666;
+            --accent: #e8e8e8;
+            --accent-dim: #aaaaaa;
+            --border: #1e1e1e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: linear-gradient(135deg, #333 0%, #111 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--bg-primary);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(220, 220, 220, 0.25);
+        }
+
+        .platform-logo {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #aaaaaa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+        }
+
+        h1::before,
+        h1::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            color: #ffffff;
+            -webkit-text-fill-color: #ffffff;
+            background: none;
+            opacity: 0;
+        }
+
+        h1::before {
+            animation: glitch1 3.5s infinite;
+            clip-path: polygon(0 15%, 100% 15%, 100% 45%, 0 45%);
+        }
+
+        h1::after {
+            animation: glitch2 3.5s infinite;
+            clip-path: polygon(0 55%, 100% 55%, 100% 85%, 0 85%);
+            animation-delay: 0.1s;
+        }
+
+        @keyframes glitch1 {
+            0%, 85%, 100% { opacity: 0; transform: none; }
+            87%            { opacity: 0.8; transform: translateX(-3px); }
+            91%            { opacity: 0.8; transform: translateX(2px); }
+            93%            { opacity: 0; transform: none; }
+        }
+
+        @keyframes glitch2 {
+            0%, 85%, 100% { opacity: 0; transform: none; }
+            88%            { opacity: 0.6; transform: translateX(3px); }
+            92%            { opacity: 0; transform: none; }
+        }
+
+        .role {
+            display: inline-block;
+            background: var(--bg-secondary);
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            font-size: 0.95rem;
+            color: var(--accent);
+            margin-top: 1rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .role:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(200, 200, 200, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .platforms {
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease-out 0.4s both;
+        }
+
+        .platforms h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .certifications {
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease-out 0.6s both;
+        }
+
+        .certifications h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .cert-wrapper {
+            position: relative;
+        }
+
+        .cert-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            max-height: 140px;
+            overflow: hidden;
+            transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 2px;
+        }
+
+        .cert-grid.expanded {
+            max-height: 1000px;
+        }
+
+        .cert-fade {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 130px;
+            background: linear-gradient(to bottom, transparent 0%, var(--bg-primary) 60%);
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cert-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--accent-dim);
+            font-size: 0.85rem;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .cert-toggle:hover {
+            border-color: var(--accent-dim);
+            color: var(--accent);
+        }
+
+        .cert-toggle-arrow {
+            display: inline-block;
+            transition: transform 0.4s ease;
+        }
+
+        .cert-toggle.open .cert-toggle-arrow {
+            transform: rotate(180deg);
+        }
+
+        .cert-card {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .cert-card.active {
+            border-color: var(--accent-dim);
+        }
+
+        .cert-card:hover {
+            box-shadow: 0 0 0 1px var(--accent-dim), 0 5px 20px rgba(200, 200, 200, 0.08);
+        }
+
+        .cert-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .cert-badge {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .path-logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .cert-name {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .cert-date {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .cert-status {
+            color: var(--accent-dim);
+            font-size: 0.8rem;
+            margin-top: 0.75rem;
+            font-style: italic;
+        }
+
+        .cert-desc {
+            list-style: none;
+            margin-top: 0.5rem;
+        }
+
+        .cert-desc li {
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            padding: 0.1rem 0;
+        }
+
+        .cert-desc li::before {
+            content: "› ";
+            color: var(--accent-dim);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-secondary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(200, 200, 200, 0.1);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .matrix {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.04;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 2rem 1rem; }
+            h1 { font-size: 2rem; }
+            .cert-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <canvas class="matrix"></canvas>
+
+    <div class="container">
+
+        <header class="header">
+            <img src="images/4.jpg" alt="" class="avatar">
+            <h1 data-text="0xReva">0xReva</h1>
+            <a href="html/whoami.html" class="role">whoami?</a>
+            <a href="html/writeup.html" class="role">write-up</a>
+        </header>
+
+        <section class="platforms">
+            <h2 align="center">Platforms</h2>
+            <div class="social-links">
+                <a href="http://tryhackme.com/p/zshrc" class="social-link" target="_blank">
+                    <img src="images/6.jpg" alt="TryHackMe" class="platform-logo">
+                    <span>TryHackMe</span>
+                </a>
+                <a href="https://www.root-me.org/pr3y4them" class="social-link" target="_blank">
+                    <img src="images/5.png" alt="Root-Me" class="platform-logo">
+                    <span>Root-Me</span>
+                </a>
+                <a href="https://play.picoctf.org/users/f3d0rq" class="social-link" target="_blank">
+                    <img src="images/1.png" alt="PicoCTF" class="platform-logo">
+                    <span>PicoCTF</span>
+                </a>
+                <a href="" class="social-link" target="_blank">
+                    <img src="images/3.jpg" alt="HackTheBox" class="platform-logo">
+                    <span>HackTheBox</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="certifications">
+            <h2 align="center">Certifications &amp; Learning Paths</h2>
+
+            <div class="cert-wrapper">
+                <div class="cert-grid" id="certGrid">
+
+                    <div class="cert-card active">
+                        <div class="cert-header">
+                            <img src="images/2.webp" alt="eJPT" class="cert-badge">
+                            <div>
+                                <div class="cert-name">eJPTv2</div>
+                                <div class="cert-date">eLearnSecurity</div>
+                            </div>
+                        </div>
+                        <div class="cert-status">eLearnSecurity Junior Penetration Tester</div>
+                    </div>
+
+                    <div class="cert-card">
+                        <div class="cert-header">
+                            <img src="images/6.jpg" alt="TryHackMe" class="path-logo">
+                            <div>
+                                <div class="cert-name">Jr Penetration Tester</div>
+                                <div class="cert-date">Issued November 6, 2025</div>
+                            </div>
+                        </div>
+                        <div class="cert-status">Learn the necessary skills to start a career as a penetration tester.</div>
+                        <ul class="cert-desc">
+                            <li>Pentesting methodologies and tactics</li>
+                            <li>Enumeration, exploitation and reporting</li>
+                            <li>Realistic hands-on hacking exercises</li>
+                            <li>Learn security tools used in the industry</li>
+                        </ul>
+                    </div>
+
+                    <div class="cert-card">
+                        <div class="cert-header">
+                            <img src="images/6.jpg" alt="TryHackMe" class="path-logo">
+                            <div>
+                                <div class="cert-name">Web Fundamentals</div>
+                                <div class="cert-date">Issued November 6, 2025</div>
+                            </div>
+                        </div>
+                        <div class="cert-status">A pathway to web application security.</div>
+                        <ul class="cert-desc">
+                            <li>Understand web fundamentals</li>
+                            <li>Major vulnerabilities explained</li>
+                            <li>Learn industry-used tools</li>
+                            <li>Web application assessments</li>
+                        </ul>
+                    </div>
+
+                    <div class="cert-card">
+                        <div class="cert-header">
+                            <img src="images/6.jpg" alt="TryHackMe" class="path-logo">
+                            <div>
+                                <div class="cert-name">loveatfirstbreach</div>
+                                <div class="cert-date">Issued February 25, 2026</div>
+                            </div>
+                        </div>
+                        <div class="cert-status">TryHackMe Learning Path</div>
+                    </div>
+
+                </div>
+
+                <div class="cert-fade" id="certFade"></div>
+            </div>
+
+            <button class="cert-toggle" id="certToggle" onclick="toggleCerts()">
+                <span id="certToggleLabel">Show more</span>
+                <span class="cert-toggle-arrow">&#9660;</span>
+            </button>
+        </section>
+
+        <footer class="footer">
+            <p>contact : revaa@proton.me</p>
+            &#169; 2026 0xReva
+        </footer>
+    </div>
+
+    <script>
+        function toggleCerts() {
+            const grid = document.getElementById('certGrid');
+            const toggle = document.getElementById('certToggle');
+            const fade = document.getElementById('certFade');
+            const label = document.getElementById('certToggleLabel');
+            const isOpen = grid.classList.contains('expanded');
+
+            grid.classList.toggle('expanded');
+            toggle.classList.toggle('open');
+
+            if (isOpen) {
+                fade.style.opacity = '0';
+                setTimeout(() => { fade.style.opacity = '1'; }, 450);
+                label.textContent = 'Show more';
+            } else {
+                fade.style.opacity = '0';
+                label.textContent = 'Show less';
+            }
+        }
+
+        const canvas = document.querySelector('.matrix');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const matrix = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%";
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(8, 8, 8, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#c8c8c8';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = matrix[Math.floor(Math.random() * matrix.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 50);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
